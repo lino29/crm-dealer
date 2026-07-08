@@ -9,14 +9,14 @@ class SendWhatsAppReminderJob implements ShouldQueue
 {
     use Queueable;
 
-    protected $schedule;
+    protected $notification;
 
     /**
      * Create a new job instance.
      */
-    public function __construct(\App\Models\ServiceSchedule $schedule)
+    public function __construct(\App\Models\WhatsAppNotification $notification)
     {
-        $this->schedule = $schedule;
+        $this->notification = $notification;
     }
 
     /**
@@ -24,27 +24,40 @@ class SendWhatsAppReminderJob implements ShouldQueue
      */
     public function handle(\App\Services\WhatsAppService $waService): void
     {
-        $this->schedule->loadMissing('vehicle.customer');
-        $customer = $this->schedule->vehicle->customer;
+        $this->notification->loadMissing(['schedule.vehicle.customer', 'customer']);
+        $schedule = $this->notification->schedule;
+        $customer = $this->notification->customer;
         
-        $phone = $customer->phone;
-        $date = $this->schedule->scheduled_date->format('d M Y');
-        $vehicleInfo = $this->schedule->vehicle->police_number . ' (' . $this->schedule->vehicle->brand . ')';
+        $phone = $this->notification->phone;
+        $date = $schedule ? $schedule->scheduled_date->format('d M Y') : 'segera';
+        $vehicleInfo = $schedule ? ($schedule->vehicle->police_number . ' (' . $schedule->vehicle->brand . ')') : 'kendaraan Anda';
 
         $template = \App\Models\Setting::getWaTemplate();
         
-        $message = str_replace(
+        // If message is already generated in notification, use it. Otherwise generate it.
+        $message = $this->notification->message ?? str_replace(
             ['{customer_name}', '{vehicle_info}', '{date}'],
-            [$customer->customer_name, $vehicleInfo, $date],
+            [$customer->customer_name ?? 'Pelanggan', $vehicleInfo, $date],
             $template
         );
 
-        $success = $waService->sendMessage($phone, $message);
+        $result = $waService->sendMessage($phone, $message);
 
-        if ($success) {
-            $this->schedule->update(['notification_status' => 'sent']);
+        if ($result['success']) {
+            $this->notification->update([
+                'send_status' => 'sent',
+                'sent_at' => now(),
+                'gateway_response' => $result['response']
+            ]);
+            
+            if ($schedule) {
+                $schedule->update(['notification_status' => 'sent']);
+            }
         } else {
-            $this->schedule->update(['notification_status' => 'failed']);
+            $this->notification->update([
+                'send_status' => 'failed',
+                'gateway_response' => $result['response']
+            ]);
         }
     }
 }

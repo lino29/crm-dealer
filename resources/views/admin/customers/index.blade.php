@@ -16,6 +16,16 @@
                 </div>
             @endif
 
+            <div class="mb-4 bg-white p-4 shadow-sm sm:rounded-lg">
+                <form method="GET" action="{{ route('admin.customers.index') }}" class="flex gap-2">
+                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Search by Name, Phone, Member Code, Police Number..." class="flex-1 rounded border-gray-300">
+                    <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded">Search</button>
+                    @if(request('search'))
+                        <a href="{{ route('admin.customers.index') }}" class="px-4 py-2 bg-gray-300 text-gray-700 rounded text-center">Clear</a>
+                    @endif
+                </form>
+            </div>
+
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 overflow-x-auto">
                     <table class="w-full text-left border-collapse">

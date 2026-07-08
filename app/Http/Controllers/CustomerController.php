@@ -7,9 +7,25 @@ use Illuminate\Http\Request;
 
 class CustomerController extends Controller
 {
-    public function index()
+    public function index(\Illuminate\Http\Request $request)
     {
-        $customers = \App\Models\Customer::with('dealer')->latest()->paginate(10);
+        $query = \App\Models\Customer::with('dealer')->latest();
+        
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('customer_name', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%")
+                  ->orWhereHas('memberCards', function($q2) use ($search) {
+                      $q2->where('member_code', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('vehicles', function($q2) use ($search) {
+                      $q2->where('police_number', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $customers = $query->paginate(10)->appends($request->query());
         return view('admin.customers.index', compact('customers'));
     }
 

@@ -68,10 +68,7 @@ class WhatsAppReminderController extends Controller
         ]);
 
         // Dispatch job
-        SendWhatsAppReminderJob::dispatch($schedule);
-
-        // Update schedule status
-        $schedule->update(['notification_status' => 'sent']);
+        SendWhatsAppReminderJob::dispatch($notification);
 
         return back()->with('success', 'Reminder queued for sending.');
     }
@@ -85,7 +82,7 @@ class WhatsAppReminderController extends Controller
         $notification->update(['send_status' => 'pending']);
 
         if ($notification->schedule) {
-            SendWhatsAppReminderJob::dispatch($notification->schedule);
+            SendWhatsAppReminderJob::dispatch($notification);
         }
 
         return back()->with('success', 'Retry queued.');

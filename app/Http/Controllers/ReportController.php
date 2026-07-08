@@ -112,8 +112,10 @@ class ReportController extends Controller
         $schedules = $query->get();
 
         if ($request->has('export')) {
-            if ($request->export === 'pdf') {
-                $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('leader.reports.exports.schedules', compact('schedules'));
+            if ($request->export === 'excel') {
+                return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\ServiceScheduleExport($schedules), 'schedules_report.xlsx');
+            } elseif ($request->export === 'pdf') {
+                $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.reports.exports.schedules', compact('schedules'));
                 return $pdf->download('schedules_report.pdf');
             }
         }
@@ -134,6 +136,15 @@ class ReportController extends Controller
 
         $notifications = $query->get();
 
+        if ($request->has('export')) {
+            if ($request->export === 'excel') {
+                return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\WhatsAppNotificationExport($notifications), 'whatsapp_report.xlsx');
+            } elseif ($request->export === 'pdf') {
+                $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.reports.exports.whatsapp', compact('notifications'));
+                return $pdf->download('whatsapp_report.pdf');
+            }
+        }
+
         return view('leader.reports.whatsapp', compact('notifications'));
     }
 
@@ -149,6 +160,15 @@ class ReportController extends Controller
         }
 
         $logs = $query->get();
+
+        if ($request->has('export')) {
+            if ($request->export === 'excel') {
+                return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\ScanLogExport($logs), 'scan_logs_report.xlsx');
+            } elseif ($request->export === 'pdf') {
+                $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.reports.exports.scan_logs', compact('logs'));
+                return $pdf->download('scan_logs_report.pdf');
+            }
+        }
 
         return view('leader.reports.scan_logs', compact('logs'));
     }
@@ -171,6 +191,9 @@ class ReportController extends Controller
             'customers' => $this->customers($request),
             'vehicles' => $this->vehicles($request),
             'service-histories' => $this->services($request),
+            'service-schedules' => $this->serviceSchedules($request),
+            'whatsapp-notifications' => $this->whatsappNotifications($request),
+            'scan-logs' => $this->scanLogs($request),
             default => abort(404),
         };
     }
