@@ -24,87 +24,58 @@
             overflow: hidden;
             box-sizing: border-box;
         }
-        .left-col {
+        .qr-container {
             position: absolute;
-            left: 18pt;
-            bottom: 18pt;
-            width: 140pt;
-        }
-        .right-col {
-            position: absolute;
-            right: 18pt;
-            top: 22pt;
-            width: 60pt;
+            left: 9.65%;
+            top: 59.16%;
+            width: 18.50%;
+            height: 29.54%;
+            background-color: white;
+            padding: 1pt;
+            border-radius: 1.5pt;
+            box-sizing: border-box;
             text-align: center;
         }
-        .company-name {
-            position: absolute;
-            left: 18pt;
-            top: 15pt;
-            font-size: 13pt;
-            font-weight: bold;
-            margin: 0;
-            text-transform: uppercase;
-            color: #111827;
-            letter-spacing: 0.5px;
+        .qr-container img {
+            width: 100%;
+            height: 100%;
+            display: block;
         }
-        .subtitle {
+        .text-container {
             position: absolute;
-            left: 18pt;
-            top: 30pt;
-            font-size: 7pt;
-            font-weight: bold;
-            margin: 0;
-            color: #4b5563;
-            letter-spacing: 1px;
-            text-transform: uppercase;
+            left: 9.25%;
+            top: 89.5%;
+            width: 45%;
         }
         .member-code {
-            font-size: 11pt;
+            font-size: 6.5pt;
             font-weight: bold;
-            letter-spacing: 1.5px;
+            color: #ffffff;
             margin: 0;
-            color: #312e81; /* Indigo 900 */
+            line-height: 1;
+            letter-spacing: 0.5px;
         }
         .customer-name {
-            font-size: 9pt;
+            font-size: 6.5pt;
             font-weight: bold;
             text-transform: uppercase;
-            margin: 2pt 0 0 0;
-            color: #1f2937;
-        }
-        .qr-wrapper {
-            display: inline-block;
-            background-color: white;
-            padding: 4pt;
-            border-radius: 4pt;
-            border: 1px solid #f3f4f6;
-        }
-        .scan-text {
-            color: #111827;
-            font-size: 6pt;
-            font-weight: bold;
-            margin: 3pt 0 0 0;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            color: #ffffff;
+            margin: 1.5pt 0 0 0;
+            line-height: 1;
         }
     </style>
 </head>
 <body>
     <div class="card">
-        <p class="company-name">{{ config('app.name', 'PT. Trijaya Motor') }}</p>
-        <p class="subtitle">CRM Member Card</p>
-        
-        <div class="left-col">
-            <p class="member-code">{{ $memberCard->member_code }}</p>
-            <p class="customer-name">{{ $customer->customer_name }}</p>
+        <!-- QR Code inside the gray box at bottom-left -->
+        <div class="qr-container">
+            <img src="data:image/svg+xml;base64,{!! base64_encode(\SimpleSoftwareIO\QrCode\Facades\QrCode::size(45)->margin(1)->generate($memberCard->qr_token)) !!}" alt="QR Code" width="45" height="45">
         </div>
         
-        <div class="right-col">
-            <div class="qr-wrapper">
-                <img src="data:image/svg+xml;base64,{!! base64_encode(\SimpleSoftwareIO\QrCode\Facades\QrCode::size(50)->generate($memberCard->qr_token)) !!}" alt="QR Code" width="50" height="50">
-            </div>
-            <p class="scan-text">Scan Me</p>
+        <!-- Member Code and Customer Name below the QR Code (White text on dark blue background) -->
+        <div class="text-container">
+            <p class="member-code">{{ $memberCard->member_code }}</p>
+            <p class="customer-name">{{ $customer->customer_name }}</p>
         </div>
     </div>
 </body>

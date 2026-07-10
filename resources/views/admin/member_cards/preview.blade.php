@@ -17,27 +17,20 @@
                 <div class="p-6 text-gray-900 flex flex-col items-center">
                     
                     <!-- Card Design -->
-                    <div class="w-[384px] h-[224px] rounded-xl shadow-2xl overflow-hidden relative flex text-gray-800"
+                    <div class="w-[384px] h-[224px] rounded-xl shadow-2xl overflow-hidden relative"
                          style="background-image: url('{{ asset('images/template_kosong.png') }}'); background-size: 100% 100%; background-position: center; background-repeat: no-repeat;">
                         
-                        <div class="flex-1 p-6 flex flex-col justify-between z-10">
-                            <div>
-                                <h2 class="text-2xl font-bold uppercase tracking-wider text-gray-900">{{ config('app.name', 'PT. Trijaya Motor') }}</h2>
-                                <p class="text-sm text-gray-600 mt-1">CRM Member Card</p>
-                            </div>
-                            
-                            <div>
-                                <p class="text-lg font-bold tracking-widest text-indigo-900">{{ $memberCard->member_code }}</p>
-                                <p class="text-md font-semibold uppercase mt-1 text-gray-800">{{ $customer->customer_name }}</p>
-                            </div>
+                        <!-- QR Code inside the gray box at bottom-left -->
+                        <div class="absolute flex items-center justify-center bg-white p-0.5 rounded shadow" 
+                             style="left: 9.65%; top: 59.16%; width: 18.50%; height: 29.54%;">
+                            {!! \SimpleSoftwareIO\QrCode\Facades\QrCode::size(65)->margin(1)->generate($memberCard->qr_token) !!}
                         </div>
 
-                        <div class="w-1/3 bg-transparent flex flex-col justify-center items-center p-2 z-10">
-                            <!-- QR Code generation -->
-                            <div class="bg-white p-2 rounded-lg shadow-md border border-gray-100">
-                                {!! \SimpleSoftwareIO\QrCode\Facades\QrCode::size(100)->generate($memberCard->qr_token) !!}
-                            </div>
-                            <p class="text-gray-900 text-xs mt-2 text-center font-bold">Scan Me</p>
+                        <!-- Member Code and Customer Name below the QR Code (White text on dark blue background) -->
+                        <div class="absolute flex flex-col justify-end" 
+                             style="left: 9.25%; top: 89.5%; width: 45%; height: 8%;">
+                            <p class="text-[9px] font-bold tracking-wider text-white leading-none">{{ $memberCard->member_code }}</p>
+                            <p class="text-[9px] font-bold uppercase text-white leading-none mt-0.5">{{ $customer->customer_name }}</p>
                         </div>
                     </div>
 
