@@ -51,8 +51,11 @@ class MemberCardController extends Controller
         $memberCard->increment('print_count');
         $memberCard->update(['last_printed_at' => now()]);
 
+        // CR-80 standard card size in points (85.60 mm x 53.98 mm)
+        $paperSize = [0, 0, 242.64, 153.01];
+
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.member_cards.print', compact('customer', 'memberCard'))
-                ->setPaper('a8', 'landscape');
+                ->setPaper($paperSize, 'portrait');
         
         return $pdf->stream('MemberCard_' . $memberCard->member_code . '.pdf');
     }

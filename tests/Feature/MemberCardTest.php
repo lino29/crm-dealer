@@ -62,7 +62,7 @@ class MemberCardTest extends TestCase
         // Assert UUID is generated
         $this->assertNotEmpty($card->qr_token);
         // Assert Code base matches
-        $this->assertStringContainsString('S12-USK-', $card->member_code);
+        $this->assertStringContainsString('S12-05-', $card->member_code);
     }
 
     public function test_validasi_duplikasi_kode_member(): void
@@ -74,7 +74,7 @@ class MemberCardTest extends TestCase
         // Setup second customer to force duplicate sequence
         $customer2 = Customer::create([
             'dealer_id' => $this->dealer->dealer_id,
-            'customer_name' => 'Usk User 2',
+            'customer_name' => 'Usk User',
             'gender' => 'female',
             'birth_date' => '1990-01-01',
             'phone' => '0899',
@@ -95,6 +95,6 @@ class MemberCardTest extends TestCase
         $this->assertEquals($card1->member_code_base, $card2->member_code_base);
         $this->assertEquals(0, $card1->duplicate_sequence);
         $this->assertEquals(1, $card2->duplicate_sequence);
-        $this->assertStringEndsWith('-1', $card2->member_code);
+        $this->assertStringEndsWith('-001', $card2->member_code);
     }
 }
