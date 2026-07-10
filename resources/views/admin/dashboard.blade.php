@@ -7,7 +7,45 @@
 
     <div class="py-8">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-            
+
+            {{-- WhatsApp Connection Status Banner --}}
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="flex items-center space-x-4">
+                    <div class="p-3 {{ $waConnection['connected'] ? 'bg-emerald-50 text-emerald-600' : ($waConnection['status'] === 'dummy' ? 'bg-blue-50 text-blue-600' : 'bg-rose-50 text-rose-600') }} rounded-lg">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-gray-800 text-lg">WhatsApp Gateway Status</h3>
+                        <p class="text-sm text-gray-500">{{ $waConnection['message'] }}</p>
+                    </div>
+                </div>
+                <div>
+                    @if($waConnection['connected'])
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-emerald-100 text-emerald-800">
+                            <span class="w-2.5 h-2.5 mr-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                            Connected
+                        </span>
+                    @elseif($waConnection['status'] === 'dummy')
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-blue-100 text-blue-800">
+                            <span class="w-2.5 h-2.5 mr-1.5 rounded-full bg-blue-500"></span>
+                            Dummy Mode
+                        </span>
+                    @elseif($waConnection['status'] === 'qr_ready')
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-amber-100 text-amber-800 animate-bounce">
+                            <span class="w-2.5 h-2.5 mr-1.5 rounded-full bg-amber-500"></span>
+                            Scan QR Code
+                        </span>
+                    @else
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-rose-100 text-rose-800">
+                            <span class="w-2.5 h-2.5 mr-1.5 rounded-full bg-rose-500"></span>
+                            Disconnected
+                        </span>
+                    @endif
+                </div>
+            </div>
+
             {{-- Stat Cards --}}
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 <!-- Total Dealers -->

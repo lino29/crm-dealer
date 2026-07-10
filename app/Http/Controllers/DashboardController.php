@@ -6,10 +6,11 @@ use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
-    public function adminIndex(\App\Services\DashboardStatisticService $statsService)
+    public function adminIndex(\App\Services\DashboardStatisticService $statsService, \App\Services\WhatsAppService $waService)
     {
         $stats = $statsService->getAdminStats();
-        return view('admin.dashboard', compact('stats'));
+        $waConnection = $waService->getConnectionStatus();
+        return view('admin.dashboard', compact('stats', 'waConnection'));
     }
 
     public function leaderIndex(\App\Services\DashboardStatisticService $statsService)

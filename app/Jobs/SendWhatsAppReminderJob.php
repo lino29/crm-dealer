@@ -47,7 +47,8 @@ class SendWhatsAppReminderJob implements ShouldQueue
             $this->notification->update([
                 'send_status' => 'sent',
                 'sent_at' => now(),
-                'gateway_response' => $result['response']
+                'gateway_response' => $result['response'],
+                'api_response_id' => $result['message_id'] ?? null
             ]);
             
             if ($schedule) {

@@ -12,9 +12,14 @@ class RoleSeeder extends Seeder
      */
     public function run(): void
     {
-        \App\Models\Role::insert([
-            ['role_name' => 'admin', 'description' => 'Admin Customer Service'],
-            ['role_name' => 'leader', 'description' => 'Pimpinan'],
-        ]);
+        \App\Models\Role::firstOrCreate(
+            ['role_name' => 'admin'],
+            ['description' => 'Admin Customer Service']
+        );
+
+        \App\Models\Role::firstOrCreate(
+            ['role_name' => 'leader'],
+            ['description' => 'Pimpinan']
+        );
     }
 }

@@ -28,3 +28,12 @@ Thumbs.db
 # Added by code-review-graph
 .code-review-graph/ 
 /docs
+.wwebjs_auth/
+chrome/
+/chrome/
+_IGNORE_default/
+wa-cli.config.json
+.node-persist/
+.wwebjs_cache/
+open-wa-default.postman_collection.json
+open-wa-default.sw_col.json
