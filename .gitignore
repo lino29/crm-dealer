@@ -27,7 +27,6 @@ Homestead.yaml
 Thumbs.db
 # Added by code-review-graph
 .code-review-graph/ 
-/docs
 .wwebjs_auth/
 chrome/
 /chrome/
