@@ -44,7 +44,17 @@ const client = new Client({
     authStrategy: new LocalAuth({ clientId: sessionName }),
     puppeteer: {
         headless: false,
-        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu'],
+        args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-gpu',
+            '--disable-features=IsolateOrigins,site-per-process',
+            '--disable-site-isolation-trials',
+            '--disable-dev-shm-usage',
+            '--no-first-run',
+            '--no-default-browser-check',
+            '--js-flags=--max-old-space-size=512'
+        ],
     },
 });
 
