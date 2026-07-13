@@ -28,6 +28,15 @@ class DatabaseSeeder extends Seeder
             ['description' => 'Leader']
         );
 
+        $supportRole = \App\Models\Role::firstOrCreate(
+            ['role_name' => 'admin_support'],
+            ['description' => 'Admin Support Pembuatan Member']
+        );
+        $stnkRole = \App\Models\Role::firstOrCreate(
+            ['role_name' => 'admin_stnk'],
+            ['description' => 'Admin STNK Pengecekan & Penyerahan']
+        );
+
         \App\Models\User::firstOrCreate(
             ['username' => 'admin'],
             [
@@ -44,6 +53,26 @@ class DatabaseSeeder extends Seeder
                 'name' => 'Leader User',
                 'email' => 'leader@trijaya.com',
                 'role_id' => $leaderRole->role_id,
+                'password' => bcrypt('password'),
+            ]
+        );
+
+        \App\Models\User::firstOrCreate(
+            ['username' => 'support'],
+            [
+                'name' => 'Support User',
+                'email' => 'support@trijaya.com',
+                'role_id' => $supportRole->role_id,
+                'password' => bcrypt('password'),
+            ]
+        );
+
+        \App\Models\User::firstOrCreate(
+            ['username' => 'stnk'],
+            [
+                'name' => 'STNK User',
+                'email' => 'stnk@trijaya.com',
+                'role_id' => $stnkRole->role_id,
                 'password' => bcrypt('password'),
             ]
         );
