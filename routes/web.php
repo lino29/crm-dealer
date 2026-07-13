@@ -99,7 +99,7 @@ Route::middleware(['auth', 'role:leader'])
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', function () {
         $role = auth()->user()->role?->role_name;
-        if ($role === 'admin') {
+        if (in_array($role, ['admin', 'admin_support', 'admin_stnk'])) {
             return redirect()->route('admin.dashboard');
         }
         if ($role === 'leader') {
