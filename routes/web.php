@@ -20,6 +20,13 @@ Route::middleware(['auth', 'role:admin'])
         // Dealer CRUD
         Route::resource('/dealers', \App\Http\Controllers\DealerController::class);
 
+        // Bulk Customer Export (must be before resource route to avoid {customer} wildcard conflict)
+        Route::post('/customers/bulk-export/excel', [\App\Http\Controllers\CustomerController::class, 'bulkExportExcel'])->name('customers.bulk_export_excel');
+        Route::post('/customers/bulk-export/pdf', [\App\Http\Controllers\CustomerController::class, 'bulkExportPdf'])->name('customers.bulk_export_pdf');
+
+        // Bulk Member Card Print (must be before resource route to avoid {customer} wildcard conflict)
+        Route::post('/customers/member-cards/bulk-print', [\App\Http\Controllers\MemberCardController::class, 'bulkPrint'])->name('member_cards.bulk_print');
+
         // Customer CRUD
         Route::resource('/customers', \App\Http\Controllers\CustomerController::class);
 
@@ -28,6 +35,7 @@ Route::middleware(['auth', 'role:admin'])
         Route::get('/customers/{customer}/member-card/preview', [\App\Http\Controllers\MemberCardController::class, 'preview'])->name('member_cards.preview');
         Route::get('/customers/{customer}/member-card/print', [\App\Http\Controllers\MemberCardController::class, 'print'])->name('member_cards.print');
         Route::post('/customers/{customer}/member-card/regenerate', [\App\Http\Controllers\MemberCardController::class, 'regenerate'])->name('member_cards.regenerate');
+
         
         // Vehicle CRUD
         Route::resource('/vehicles', \App\Http\Controllers\VehicleController::class);

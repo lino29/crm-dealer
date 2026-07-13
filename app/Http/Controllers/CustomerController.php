@@ -66,4 +66,46 @@ class CustomerController extends Controller
         $customer->update(['status' => 'inactive']);
         return redirect()->route('admin.customers.index')->with('success', 'Customer set to inactive.');
     }
+
+    /**
+     * Bulk export selected customers as Excel.
+     */
+    public function bulkExportExcel(\Illuminate\Http\Request $request)
+    {
+        $ids = $request->input('customer_ids', []);
+
+        if (empty($ids)) {
+            return redirect()->route('admin.customers.index')->with('error', 'Pilih minimal satu pelanggan untuk diekspor.');
+        }
+
+        $customers = \App\Models\Customer::with('dealer')
+            ->whereIn('customer_id', $ids)
+            ->get();
+
+        return \Maatwebsite\Excel\Facades\Excel::download(
+            new \App\Exports\CustomersExport($customers),
+            'customers_export_' . now()->format('Ymd_His') . '.xlsx'
+        );
+    }
+
+    /**
+     * Bulk export selected customers as PDF.
+     */
+    public function bulkExportPdf(\Illuminate\Http\Request $request)
+    {
+        $ids = $request->input('customer_ids', []);
+
+        if (empty($ids)) {
+            return redirect()->route('admin.customers.index')->with('error', 'Pilih minimal satu pelanggan untuk diekspor.');
+        }
+
+        $customers = \App\Models\Customer::with('dealer')
+            ->whereIn('customer_id', $ids)
+            ->get();
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.reports.exports.customers', compact('customers'))
+            ->setPaper('a4', 'portrait');
+
+        return $pdf->download('customers_export_' . now()->format('Ymd_His') . '.pdf');
+    }
 }

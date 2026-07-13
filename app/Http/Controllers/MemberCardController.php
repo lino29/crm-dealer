@@ -93,4 +93,39 @@ class MemberCardController extends Controller
 
         return redirect()->route('admin.member_cards.preview', $customer)->with('success', 'Token regenerated. Old card deactivated.');
     }
+
+    /**
+     * Bulk print member cards for multiple customers as a single combined PDF.
+     */
+    public function bulkPrint(\Illuminate\Http\Request $request)
+    {
+        $ids = $request->input('customer_ids', []);
+
+        if (empty($ids)) {
+            return redirect()->route('admin.customers.index')->with('error', 'Pilih minimal satu pelanggan untuk mencetak kartu.');
+        }
+
+        $customers = \App\Models\Customer::with('memberCard')
+            ->whereIn('customer_id', $ids)
+            ->whereHas('memberCard', fn($q) => $q->where('status', 'active'))
+            ->get();
+
+        if ($customers->isEmpty()) {
+            return redirect()->route('admin.customers.index')->with('error', 'Tidak ada pelanggan terpilih yang memiliki kartu member aktif.');
+        }
+
+        // Increment print count for all selected cards
+        foreach ($customers as $customer) {
+            $customer->memberCard->increment('print_count');
+            $customer->memberCard->update(['last_printed_at' => now()]);
+        }
+
+        // CR-80 standard card size in points (85.60mm x 53.98mm)
+        $paperSize = [0, 0, 242.64, 153.01];
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.member_cards.bulk_print', compact('customers'))
+            ->setPaper($paperSize, 'portrait');
+
+        return $pdf->stream('MemberCards_Bulk_' . now()->format('Ymd_His') . '.pdf');
+    }
 }
