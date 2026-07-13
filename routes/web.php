@@ -96,6 +96,17 @@ Route::middleware(['auth', 'role:leader'])
     });
 
 Route::middleware('auth')->group(function () {
+    Route::get('/dashboard', function () {
+        $role = auth()->user()->role?->role_name;
+        if ($role === 'admin') {
+            return redirect()->route('admin.dashboard');
+        }
+        if ($role === 'leader') {
+            return redirect()->route('leader.dashboard');
+        }
+        abort(403, 'Unauthorized.');
+    })->name('dashboard');
+
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');

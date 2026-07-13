@@ -29,13 +29,14 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerate();
 
         $user = $request->user();
-        if ($user->role->role_name === 'admin') {
+        $roleName = $user->role?->role_name;
+        if ($roleName === 'admin') {
             return redirect()->intended(route('admin.dashboard', absolute: false));
-        } elseif ($user->role->role_name === 'leader') {
+        } elseif ($roleName === 'leader') {
             return redirect()->intended(route('leader.dashboard', absolute: false));
         }
 
-        return redirect('/');
+        return redirect()->intended(route('dashboard', absolute: false));
     }
 
     /**

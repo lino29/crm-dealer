@@ -54,9 +54,10 @@ class VehicleTest extends TestCase
             'color' => 'Black',
             'engine_number' => 'ENG123',
             'chassis_number' => 'CHA123',
+            'status' => 'active',
         ]);
 
-        $response->assertRedirect(route('admin.vehicles.index'));
+        $response->assertRedirect(route('admin.customers.show', $this->customer->customer_id));
         $this->assertDatabaseHas('vehicles', [
             'police_number' => 'B 1234 ABC',
             'brand' => 'Yamaha'
