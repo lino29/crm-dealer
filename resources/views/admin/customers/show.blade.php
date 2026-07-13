@@ -122,6 +122,7 @@
                                 <div><span class="block text-slate-400">Jumlah Cetak</span> {{ $customer->memberCard->print_count }}×</div>
                                 <div class="col-span-2"><span class="block text-slate-400">Terakhir Dicetak</span> {{ $customer->memberCard->last_printed_at?->format('d M Y H:i') ?? 'Belum pernah' }}</div>
                             </div>
+                            @if(in_array(Auth::user()->role?->role_name, ['admin', 'admin_support']))
                             <div class="flex flex-wrap gap-2 pt-1">
                                 <a href="{{ route('admin.member_cards.preview', $customer) }}"
                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium rounded-lg transition">
@@ -143,11 +144,15 @@
                                     </button>
                                 </form>
                             </div>
+                            @endif
                         </div>
                         @else
                         <div class="rounded-xl border-2 border-dashed border-slate-200 p-8 text-center">
                             <svg class="w-12 h-12 mx-auto text-slate-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
-                            <p class="text-sm text-slate-500 mb-4">Belum ada kartu member yang diterbitkan.</p>
+                            <p class="text-sm text-slate-500 {{ in_array(Auth::user()->role?->role_name, ['admin', 'admin_support']) ? 'mb-4' : '' }}">
+                                Belum ada kartu member yang diterbitkan.
+                            </p>
+                            @if(in_array(Auth::user()->role?->role_name, ['admin', 'admin_support']))
                             <form action="{{ route('admin.member_cards.generate', $customer) }}" method="POST">
                                 @csrf
                                 <button type="submit"
@@ -156,6 +161,9 @@
                                     Generate Kartu Member
                                 </button>
                             </form>
+                            @else
+                                <span class="text-xs text-slate-400 block mt-2">Hubungi Admin Support untuk pembuatan kartu member pelanggan ini.</span>
+                            @endif
                         </div>
                         @endif
                     </div>
