@@ -69,6 +69,7 @@
                     </button>
                 </form>
 
+                @if(in_array(Auth::user()->role?->role_name, ['admin', 'admin_support']))
                 {{-- Bulk Print Member Cards — CR-80 Card Size (1 per page) --}}
                 <form id="form-bulk-print" method="POST" action="{{ route('admin.member_cards.bulk_print') }}" target="_blank">
                     @csrf
@@ -98,6 +99,7 @@
                         Print Kartu (A4 Sheet)
                     </button>
                 </form>
+                @endif
 
                 {{-- Deselect All --}}
                 <button type="button" id="btn-deselect-all"
@@ -181,6 +183,7 @@
             }
 
             function buildHiddenInputs(container, ids) {
+                if (!container) return;
                 container.innerHTML = '';
                 ids.forEach(id => {
                     const input = document.createElement('input');
