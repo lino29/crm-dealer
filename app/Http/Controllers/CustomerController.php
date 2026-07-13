@@ -45,8 +45,23 @@ class CustomerController extends Controller
 
     public function show(\App\Models\Customer $customer)
     {
-        $customer->load(['dealer', 'creator']);
-        return view('admin.customers.show', compact('customer'));
+        $customer->load([
+            'dealer',
+            'creator',
+            'memberCard',
+            'vehicles.serviceHistories',
+        ]);
+
+        // Collect all service histories across all vehicles, sorted newest first
+        $serviceHistories = $customer->vehicles
+            ->flatMap(fn($v) => $v->serviceHistories->map(fn($h) => $h->setRelation('vehicle', $v)))
+            ->sortByDesc('service_date');
+
+        // Scan logs and WA notifications
+        $scanLogs = $customer->scanLogs()->with('scanner')->latest('scanned_at')->limit(30)->get();
+        $waNotifications = $customer->whatsappNotifications()->latest()->limit(30)->get();
+
+        return view('admin.customers.show', compact('customer', 'serviceHistories', 'scanLogs', 'waNotifications'));
     }
 
     public function edit(\App\Models\Customer $customer)
