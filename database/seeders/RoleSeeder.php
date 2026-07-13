@@ -21,5 +21,15 @@ class RoleSeeder extends Seeder
             ['role_name' => 'leader'],
             ['description' => 'Pimpinan']
         );
+
+        \App\Models\Role::firstOrCreate(
+            ['role_name' => 'admin_support'],
+            ['description' => 'Admin Support Pembuatan Member']
+        );
+
+        \App\Models\Role::firstOrCreate(
+            ['role_name' => 'admin_stnk'],
+            ['description' => 'Admin STNK Pengecekan & Penyerahan']
+        );
     }
 }

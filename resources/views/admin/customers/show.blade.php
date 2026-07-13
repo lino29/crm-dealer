@@ -184,7 +184,8 @@
                                     <th class="px-5 py-3">Merek / Model</th>
                                     <th class="px-5 py-3">Warna</th>
                                     <th class="px-5 py-3">Tgl Beli</th>
-                                    <th class="px-5 py-3">Status</th>
+                                    <th class="px-5 py-3">Status Mobil</th>
+                                    <th class="px-5 py-3">Status STNK</th>
                                     <th class="px-5 py-3 text-right">Aksi</th>
                                 </tr>
                             </thead>
@@ -199,6 +200,48 @@
                                         <span class="px-2.5 py-1 rounded-full text-xs font-semibold {{ $vehicle->status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700' }}">
                                             {{ ucfirst($vehicle->status) }}
                                         </span>
+                                    </td>
+                                    <td class="px-5 py-3.5">
+                                        <div class="flex flex-col gap-1.5">
+                                            @php
+                                                $stnkBadgeColor = match($vehicle->stnk_status) {
+                                                    'ready' => 'bg-indigo-100 text-indigo-700 border-indigo-200',
+                                                    'diserahkan' => 'bg-emerald-100 text-emerald-700 border-emerald-200',
+                                                    default => 'bg-amber-100 text-amber-700 border-amber-200',
+                                                };
+                                            @endphp
+                                            <span class="inline-flex items-center w-max px-2.5 py-1 rounded-full text-xs font-bold border {{ $stnkBadgeColor }}">
+                                                {{ ucfirst($vehicle->stnk_status) }}
+                                            </span>
+
+                                            {{-- Details --}}
+                                            @if($vehicle->stnk_status === 'ready' && $vehicle->stnk_received_at)
+                                                <span class="text-[10px] text-slate-400">Diterima: {{ $vehicle->stnk_received_at->format('d M H:i') }}</span>
+                                            @elseif($vehicle->stnk_status === 'diserahkan' && $vehicle->stnk_handed_over_at)
+                                                <span class="text-[10px] text-slate-400">Diserahkan: {{ $vehicle->stnk_handed_over_at->format('d M H:i') }}</span>
+                                            @endif
+
+                                            {{-- Transition Controls (admin & admin_stnk only) --}}
+                                            @if(in_array(Auth::user()->role?->role_name, ['admin', 'admin_stnk']))
+                                                @if($vehicle->stnk_status === 'proses')
+                                                    <form action="{{ route('admin.vehicles.update_stnk', $vehicle) }}" method="POST">
+                                                        @csrf
+                                                        <input type="hidden" name="stnk_status" value="ready">
+                                                        <button type="submit" class="inline-flex items-center text-[10px] font-bold text-indigo-600 hover:text-indigo-800 transition">
+                                                            Set Ready &raquo;
+                                                        </button>
+                                                    </form>
+                                                @elseif($vehicle->stnk_status === 'ready')
+                                                    <form action="{{ route('admin.vehicles.update_stnk', $vehicle) }}" method="POST">
+                                                        @csrf
+                                                        <input type="hidden" name="stnk_status" value="diserahkan">
+                                                        <button type="submit" class="inline-flex items-center text-[10px] font-bold text-emerald-600 hover:text-emerald-800 transition">
+                                                            Serahkan ke Konsumen &raquo;
+                                                        </button>
+                                                    </form>
+                                                @endif
+                                            @endif
+                                        </div>
                                     </td>
                                     <td class="px-5 py-3.5 text-right">
                                         <div class="flex items-center justify-end gap-3">

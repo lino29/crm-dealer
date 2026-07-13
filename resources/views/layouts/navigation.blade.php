@@ -1,6 +1,6 @@
 @php
     $role = Auth::user()->role?->role_name ?? 'user';
-    $dashboardRoute = $role === 'admin' ? route('admin.dashboard') : route('leader.dashboard');
+    $dashboardRoute = in_array($role, ['admin', 'admin_support', 'admin_stnk']) ? route('admin.dashboard') : route('leader.dashboard');
     $isDashboardActive = request()->routeIs('admin.dashboard') || request()->routeIs('leader.dashboard');
 @endphp
 
@@ -24,7 +24,7 @@
             </div>
             <div class="min-w-0">
                 <p class="font-bold text-sm text-white leading-none truncate">CRM Dealer</p>
-                <p class="text-xs text-slate-400 capitalize mt-0.5">{{ $role }}</p>
+                <p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mt-0.5">{{ str_replace('_', ' ', $role) }}</p>
             </div>
         </a>
         {{-- Close button (mobile) --}}
@@ -50,13 +50,14 @@
             </a>
         </div>
 
-        @if($role === 'admin')
+        @if(in_array($role, ['admin', 'admin_support', 'admin_stnk']))
 
         {{-- ===== CORE CRM ===== --}}
         <div>
             <p class="px-3 mb-1.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Core CRM</p>
             <div class="space-y-0.5">
 
+                {{-- Dealers: admin, admin_support, admin_stnk --}}
                 @php $isActive = request()->routeIs('admin.dealers.*'); @endphp
                 <a href="{{ route('admin.dealers.index') }}"
                    class="flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 group {{ $isActive ? 'bg-indigo-600 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
@@ -66,6 +67,7 @@
                     Dealers
                 </a>
 
+                {{-- Customers: admin, admin_support, admin_stnk --}}
                 @php $isActive = request()->routeIs('admin.customers.*'); @endphp
                 <a href="{{ route('admin.customers.index') }}"
                    class="flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 group {{ $isActive ? 'bg-indigo-600 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
@@ -75,18 +77,22 @@
                     Customers
                 </a>
 
+                {{-- Vehicles: admin, admin_stnk --}}
+                @if(in_array($role, ['admin', 'admin_stnk']))
                 @php $isActive = request()->routeIs('admin.vehicles.*'); @endphp
                 <a href="{{ route('admin.vehicles.index') }}"
                    class="flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 group {{ $isActive ? 'bg-indigo-600 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
                     <svg class="w-5 h-5 mr-3 shrink-0 {{ $isActive ? 'text-white' : 'text-slate-400 group-hover:text-white' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
                     </svg>
-                    Vehicles
+                    Vehicles & STNK
                 </a>
+                @endif
             </div>
         </div>
 
-        {{-- ===== OPERATIONS ===== --}}
+        {{-- ===== OPERATIONS: admin, admin_support ===== --}}
+        @if(in_array($role, ['admin', 'admin_support']))
         <div>
             <p class="px-3 mb-1.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Operations</p>
             <div class="space-y-0.5">
@@ -119,8 +125,10 @@
                 </a>
             </div>
         </div>
+        @endif
 
-        {{-- ===== REPORTS ===== --}}
+        {{-- ===== REPORTS: admin only (leader has separate report group) ===== --}}
+        @if($role === 'admin')
         <div>
             <p class="px-3 mb-1.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Reports & Audit</p>
             <div class="space-y-0.5">
@@ -145,7 +153,7 @@
             </div>
         </div>
 
-        {{-- ===== SYSTEM ===== --}}
+        {{-- ===== SYSTEM: admin only ===== --}}
         <div>
             <p class="px-3 mb-1.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">System</p>
             <div class="space-y-0.5">
@@ -169,8 +177,9 @@
                 </a>
             </div>
         </div>
+        @endif
 
-        @endif {{-- end admin --}}
+        @endif {{-- end admin group --}}
 
         @if($role === 'leader')
 

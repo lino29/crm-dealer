@@ -7,10 +7,29 @@ use Illuminate\Http\Request;
 
 class VehicleController extends Controller
 {
-    public function index()
+    public function index(\Illuminate\Http\Request $request)
     {
-        // Typically not used directly as vehicles are shown in customer detail
-        $vehicles = \App\Models\Vehicle::with('customer')->latest()->paginate(10);
+        $query = \App\Models\Vehicle::with('customer')->latest();
+
+        // Search filter
+        if ($search = $request->input('search')) {
+            $query->where(function($q) use ($search) {
+                $q->where('police_number', 'like', "%{$search}%")
+                  ->orWhere('brand', 'like', "%{$search}%")
+                  ->orWhere('model', 'like', "%{$search}%")
+                  ->orWhereHas('customer', function($cq) use ($search) {
+                      $cq->where('customer_name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        // STNK status filter
+        if ($stnkStatus = $request->input('stnk_status')) {
+            $query->where('stnk_status', $stnkStatus);
+        }
+
+        $vehicles = $query->paginate(15)->withQueryString();
+
         return view('admin.vehicles.index', compact('vehicles'));
     }
 
@@ -49,5 +68,29 @@ class VehicleController extends Controller
     {
         $vehicle->update(['status' => 'inactive']);
         return redirect()->route('admin.customers.show', $vehicle->customer_id)->with('success', 'Vehicle set to inactive.');
+    }
+
+    /**
+     * Update the STNK status of a vehicle (proses -> ready -> diserahkan).
+     */
+    public function updateStnkStatus(Request $request, \App\Models\Vehicle $vehicle)
+    {
+        $request->validate([
+            'stnk_status' => 'required|in:proses,ready,diserahkan',
+        ]);
+
+        $status = $request->input('stnk_status');
+        $updateData = ['stnk_status' => $status];
+
+        if ($status === 'ready') {
+            $updateData['stnk_received_at'] = now();
+        } elseif ($status === 'diserahkan') {
+            $updateData['stnk_handed_over_at'] = now();
+        }
+
+        $vehicle->update($updateData);
+
+        return redirect()->route('admin.customers.show', $vehicle->customer_id)
+            ->with('success', 'Status STNK kendaraan ' . $vehicle->police_number . ' berhasil diupdate menjadi ' . ucfirst($status) . '.');
     }
 }

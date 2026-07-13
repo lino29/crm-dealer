@@ -19,12 +19,17 @@ class Vehicle extends Model
         'color',
         'purchase_date',
         'status',
+        'stnk_status',
+        'stnk_received_at',
+        'stnk_handed_over_at',
     ];
 
     protected function casts(): array
     {
         return [
             'purchase_date' => 'date',
+            'stnk_received_at' => 'datetime',
+            'stnk_handed_over_at' => 'datetime',
         ];
     }
 
