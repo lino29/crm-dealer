@@ -26,6 +26,7 @@ Route::middleware(['auth', 'role:admin'])
 
         // Bulk Member Card Print (must be before resource route to avoid {customer} wildcard conflict)
         Route::post('/customers/member-cards/bulk-print', [\App\Http\Controllers\MemberCardController::class, 'bulkPrint'])->name('member_cards.bulk_print');
+        Route::post('/customers/member-cards/bulk-print-a4', [\App\Http\Controllers\MemberCardController::class, 'bulkPrintA4'])->name('member_cards.bulk_print_a4');
 
         // Customer CRUD
         Route::resource('/customers', \App\Http\Controllers\CustomerController::class);

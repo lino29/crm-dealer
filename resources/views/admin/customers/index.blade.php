@@ -69,17 +69,33 @@
                     </button>
                 </form>
 
-                {{-- Bulk Print Member Cards Form --}}
+                {{-- Bulk Print Member Cards — CR-80 Card Size (1 per page) --}}
                 <form id="form-bulk-print" method="POST" action="{{ route('admin.member_cards.bulk_print') }}" target="_blank">
                     @csrf
                     <div id="hidden-ids-print"></div>
                     <button type="submit"
-                            class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-md shadow transition">
+                            class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-md shadow transition"
+                            title="Cetak PDF — setiap halaman berukuran persis 1 kartu CR-80 (85.6 × 54 mm)">
                         <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                   d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
                         </svg>
-                        Print Kartu Member
+                        Print Kartu (CR-80)
+                    </button>
+                </form>
+
+                {{-- Bulk Print Member Cards — A4 Sheet (many cards per page) --}}
+                <form id="form-bulk-print-a4" method="POST" action="{{ route('admin.member_cards.bulk_print_a4') }}" target="_blank">
+                    @csrf
+                    <div id="hidden-ids-print-a4"></div>
+                    <button type="submit"
+                            class="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-md shadow transition"
+                            title="Cetak PDF — kertas A4, susunan 2 kolom × 5 baris (hingga 10 kartu per halaman)">
+                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7"/>
+                        </svg>
+                        Print Kartu (A4 Sheet)
                     </button>
                 </form>
 
@@ -156,6 +172,7 @@
             const hiddenExcel     = document.getElementById('hidden-ids-excel');
             const hiddenPdf       = document.getElementById('hidden-ids-pdf');
             const hiddenPrint     = document.getElementById('hidden-ids-print');
+            const hiddenPrintA4   = document.getElementById('hidden-ids-print-a4');
 
             function getCheckedIds() {
                 return Array.from(rowCheckboxes)
@@ -182,9 +199,10 @@
 
                 if (count > 0) {
                     bulkToolbar.classList.remove('hidden');
-                    buildHiddenInputs(hiddenExcel,  ids);
-                    buildHiddenInputs(hiddenPdf,    ids);
-                    buildHiddenInputs(hiddenPrint,  ids);
+                    buildHiddenInputs(hiddenExcel,    ids);
+                    buildHiddenInputs(hiddenPdf,      ids);
+                    buildHiddenInputs(hiddenPrint,    ids);
+                    buildHiddenInputs(hiddenPrintA4,  ids);
                 } else {
                     bulkToolbar.classList.add('hidden');
                 }

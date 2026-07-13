@@ -128,4 +128,37 @@ class MemberCardController extends Controller
 
         return $pdf->stream('MemberCards_Bulk_' . now()->format('Ymd_His') . '.pdf');
     }
+
+    /**
+     * Bulk print member cards on A4 paper — multiple cards per page in a grid layout.
+     * Layout: 2 columns × 5 rows = up to 10 cards per A4 page.
+     */
+    public function bulkPrintA4(\Illuminate\Http\Request $request)
+    {
+        $ids = $request->input('customer_ids', []);
+
+        if (empty($ids)) {
+            return redirect()->route('admin.customers.index')->with('error', 'Pilih minimal satu pelanggan untuk mencetak kartu.');
+        }
+
+        $customers = \App\Models\Customer::with('memberCard')
+            ->whereIn('customer_id', $ids)
+            ->whereHas('memberCard', fn($q) => $q->where('status', 'active'))
+            ->get();
+
+        if ($customers->isEmpty()) {
+            return redirect()->route('admin.customers.index')->with('error', 'Tidak ada pelanggan terpilih yang memiliki kartu member aktif.');
+        }
+
+        // Increment print count for all selected cards
+        foreach ($customers as $customer) {
+            $customer->memberCard->increment('print_count');
+            $customer->memberCard->update(['last_printed_at' => now()]);
+        }
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.member_cards.bulk_print_a4', compact('customers'))
+            ->setPaper('a4', 'portrait');
+
+        return $pdf->stream('MemberCards_A4_' . now()->format('Ymd_His') . '.pdf');
+    }
 }
