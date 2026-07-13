@@ -1,5 +1,5 @@
 @php
-    $role = Auth::user()->role->role_name;
+    $role = Auth::user()->role?->role_name ?? 'user';
     $dashboardRoute = $role === 'admin' ? route('admin.dashboard') : route('leader.dashboard');
     $isDashboardActive = request()->routeIs('admin.dashboard') || request()->routeIs('leader.dashboard');
 @endphp
