@@ -260,6 +260,10 @@
             btnStart.disabled = true;
             btnStart.textContent = 'Memulai...';
 
+            // Show scanning state first so the reader has non-zero client dimensions
+            goTo('scanning');
+            activeCameraLabel.textContent = selectedLabel;
+
             html5QrCode.start(
                 selectedId,
                 {
@@ -274,7 +278,6 @@
                 () => { /* ignore frame errors */ }
             ).then(() => {
                 isScanning = true;
-                activeCameraLabel.textContent = selectedLabel;
                 btnStart.disabled = false;
                 btnStart.innerHTML = `
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -283,8 +286,8 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                               d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg> Mulai Scan`;
-                goTo('scanning');
             }).catch(err => {
+                isScanning = false;
                 btnStart.disabled = false;
                 btnStart.innerHTML = `
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -294,7 +297,10 @@
                               d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg> Mulai Scan`;
 
-                let msg = 'Gagal mengaktifkan kamera yang dipilih.';
+                // Revert state back to select on failure
+                goTo('select');
+
+                let msg = 'Gagal mengaktifkan kamera: ' + (err.message || err);
                 if (err && err.name === 'NotAllowedError') {
                     msg = 'Akses kamera ditolak oleh browser.';
                 } else if (err && err.name === 'NotReadableError') {
