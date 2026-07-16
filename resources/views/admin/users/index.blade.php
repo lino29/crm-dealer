@@ -9,7 +9,10 @@
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             @if(session('success'))
-                <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4">{{ session('success') }}</div>
+                <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4 rounded">{{ session('success') }}</div>
+            @endif
+            @if(session('error'))
+                <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4 rounded">{{ session('error') }}</div>
             @endif
 
             <div class="bg-white shadow-sm sm:rounded-lg p-6 mb-4">
@@ -64,8 +67,18 @@
                                     {{ ucfirst($user->status) }}
                                 </span>
                             </td>
-                            <td class="px-4 py-3">
-                                <a href="{{ route('admin.users.edit', $user) }}" class="text-blue-600 hover:underline">Edit</a>
+                            <td class="px-4 py-3 flex items-center gap-3">
+                                <a href="{{ route('admin.users.edit', $user) }}" class="text-blue-600 hover:text-blue-800 hover:underline text-sm font-semibold">Edit</a>
+                                @if(auth()->id() !== $user->user_id)
+                                    <form action="{{ route('admin.users.destroy', $user) }}" method="POST"
+                                          onsubmit="return confirm('Apakah Anda yakin ingin menghapus user ini secara permanen?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="text-red-600 hover:text-red-800 hover:underline text-sm font-semibold">
+                                            Delete
+                                        </button>
+                                    </form>
+                                @endif
                             </td>
                         </tr>
                         @empty

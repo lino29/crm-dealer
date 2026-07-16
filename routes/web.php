@@ -15,7 +15,7 @@ Route::middleware(['auth', 'role:admin,admin_support,admin_stnk'])
         Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'adminIndex'])->name('dashboard');
 
         // K7: User Management (AUTH-04) - Only super admin
-        Route::resource('/users', \App\Http\Controllers\UserController::class)->except(['show', 'destroy'])->middleware('role:admin');
+        Route::resource('/users', \App\Http\Controllers\UserController::class)->except(['show'])->middleware('role:admin');
 
         // Dealer CRUD - Shared
         Route::resource('/dealers', \App\Http\Controllers\DealerController::class);
