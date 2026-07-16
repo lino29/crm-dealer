@@ -46,13 +46,34 @@
                 </div>
             @endif
 
-            {{-- Search Bar --}}
+            {{-- Search Bar + Per-Page Selector --}}
             <div class="mb-4 bg-white p-4 shadow-sm sm:rounded-lg">
-                <form method="GET" action="{{ route('admin.customers.index') }}" class="flex gap-2">
-                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Search by Name, Phone, Member Code, Police Number..." class="flex-1 rounded border-gray-300">
-                    <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded">Search</button>
+                <form method="GET" action="{{ route('admin.customers.index') }}" class="flex flex-wrap gap-2 items-center">
+                    {{-- Keep per_page when searching --}}
+                    <input type="hidden" name="per_page" value="{{ $perPage }}">
+
+                    <input type="text" name="search"
+                           value="{{ request('search') }}"
+                           placeholder="Search by Name, Phone, Member Code, Police Number..."
+                           class="flex-1 min-w-[200px] rounded border-gray-300">
+
+                    {{-- Per-page selector (visible, submits the form) --}}
+                    <div class="flex items-center gap-1.5 text-sm text-gray-600">
+                        <span class="whitespace-nowrap">Tampilkan</span>
+                        <select name="per_page"
+                                onchange="this.form.submit()"
+                                class="rounded border-gray-300 text-sm py-1.5 pr-8 focus:ring-indigo-500 focus:border-indigo-500">
+                            @foreach([10, 20, 30, 50, 100] as $opt)
+                                <option value="{{ $opt }}" {{ $perPage == $opt ? 'selected' : '' }}>{{ $opt }}</option>
+                            @endforeach
+                        </select>
+                        <span class="whitespace-nowrap">data</span>
+                    </div>
+
+                    <button type="submit" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm rounded transition">Search</button>
                     @if(request('search'))
-                        <a href="{{ route('admin.customers.index') }}" class="px-4 py-2 bg-gray-300 text-gray-700 rounded text-center">Clear</a>
+                        <a href="{{ route('admin.customers.index', ['per_page' => $perPage]) }}"
+                           class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm rounded text-center transition">Clear</a>
                     @endif
                 </form>
             </div>
@@ -178,8 +199,24 @@
                             @endforeach
                         </tbody>
                     </table>
-                    <div class="mt-4">
-                        {{ $customers->links() }}
+                    {{-- Pagination Footer --}}
+                    <div class="mt-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+
+                        {{-- Showing X–Y of Z info --}}
+                        <p class="text-sm text-gray-500">
+                            Menampilkan
+                            <span class="font-semibold text-gray-800">{{ $customers->firstItem() ?? 0 }}</span>
+                            –
+                            <span class="font-semibold text-gray-800">{{ $customers->lastItem() ?? 0 }}</span>
+                            dari
+                            <span class="font-semibold text-gray-800">{{ $customers->total() }}</span>
+                            data
+                        </p>
+
+                        {{-- Pagination links --}}
+                        <div class="overflow-x-auto">
+                            {{ $customers->links() }}
+                        </div>
                     </div>
                 </div>
             </div>

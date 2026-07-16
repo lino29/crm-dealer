@@ -10,23 +10,30 @@ class CustomerController extends Controller
     public function index(\Illuminate\Http\Request $request)
     {
         $query = \App\Models\Customer::with('dealer')->latest();
-        
+
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('customer_name', 'like', "%{$search}%")
                   ->orWhere('phone', 'like', "%{$search}%")
-                  ->orWhereHas('memberCards', function($q2) use ($search) {
+                  ->orWhereHas('memberCards', function ($q2) use ($search) {
                       $q2->where('member_code', 'like', "%{$search}%");
                   })
-                  ->orWhereHas('vehicles', function($q2) use ($search) {
+                  ->orWhereHas('vehicles', function ($q2) use ($search) {
                       $q2->where('police_number', 'like', "%{$search}%");
                   });
             });
         }
 
-        $customers = $query->paginate(10)->appends($request->query());
-        return view('admin.customers.index', compact('customers'));
+        // Whitelist allowed per-page values; default to 10
+        $perPage = (int) $request->input('per_page', 10);
+        if (!in_array($perPage, [10, 20, 30, 50, 100])) {
+            $perPage = 10;
+        }
+
+        $customers = $query->paginate($perPage)->appends($request->query());
+
+        return view('admin.customers.index', compact('customers', 'perPage'));
     }
 
     public function create()
