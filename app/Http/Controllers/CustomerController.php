@@ -85,8 +85,18 @@ class CustomerController extends Controller
 
     public function destroy(\App\Models\Customer $customer)
     {
-        $customer->update(['status' => 'inactive']);
-        return redirect()->route('admin.customers.index')->with('success', 'Customer set to inactive.');
+        \Illuminate\Support\Facades\DB::transaction(function () use ($customer) {
+            // Delete all associated records to maintain DB integrity
+            $customer->whatsappNotifications()->delete();
+            $customer->scanLogs()->delete();
+            $customer->serviceSchedules()->delete();
+            $customer->serviceHistories()->delete();
+            $customer->memberCards()->delete();
+            $customer->vehicles()->delete();
+            $customer->delete();
+        });
+
+        return redirect()->route('admin.customers.index')->with('success', 'Customer dan semua data terkait berhasil dihapus secara permanen.');
     }
 
     /**

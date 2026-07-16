@@ -189,10 +189,11 @@
                                 <td class="border-b py-2 px-4 flex space-x-2">
                                     <a href="{{ route('admin.customers.show', $customer) }}" class="text-indigo-500 hover:underline">Detail</a>
                                     <a href="{{ route('admin.customers.edit', $customer) }}" class="text-blue-500 hover:underline">Edit</a>
-                                    <form action="{{ route('admin.customers.destroy', $customer) }}" method="POST" onsubmit="return confirm('Set to inactive?');">
+                                    <form action="{{ route('admin.customers.destroy', $customer) }}" method="POST"
+                                          onsubmit="return confirm('Apakah Anda yakin ingin menghapus pelanggan ini beserta seluruh data kendaraan, kartu member, dan riwayat servis terkait secara permanen?')">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="text-red-500 hover:underline">Inactive</button>
+                                        <button type="submit" class="text-red-500 hover:underline">Delete</button>
                                     </form>
                                 </td>
                             </tr>
