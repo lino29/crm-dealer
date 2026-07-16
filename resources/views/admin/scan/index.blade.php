@@ -265,16 +265,9 @@
                 {
                     fps: 10,
                     qrbox: function(viewfinderWidth, viewfinderHeight) {
-                        // Dynamically size QR box to 70% of the smallest dimension
                         const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
                         const size = Math.floor(minEdge * 0.7);
                         return { width: size, height: size };
-                    },
-                    aspectRatio: 1.0,
-                    videoConstraints: {
-                        deviceId: { exact: selectedId },
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 }
                     }
                 },
                 (decodedText) => { validateToken(decodedText); },
