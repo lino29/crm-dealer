@@ -24,6 +24,10 @@ Route::middleware(['auth', 'role:admin,admin_support,admin_stnk'])
         Route::post('/customers/bulk-export/excel', [\App\Http\Controllers\CustomerController::class, 'bulkExportExcel'])->name('customers.bulk_export_excel');
         Route::post('/customers/bulk-export/pdf', [\App\Http\Controllers\CustomerController::class, 'bulkExportPdf'])->name('customers.bulk_export_pdf');
 
+        // Customer Excel Import - admin & admin_support only
+        Route::get('/customers/import/template', [\App\Http\Controllers\CustomerController::class, 'downloadTemplate'])->name('customers.import.template')->middleware('role:admin,admin_support');
+        Route::post('/customers/import', [\App\Http\Controllers\CustomerController::class, 'importExcel'])->name('customers.import')->middleware('role:admin,admin_support');
+
         // Bulk Member Card Print - admin & admin_support
         Route::post('/customers/member-cards/bulk-print', [\App\Http\Controllers\MemberCardController::class, 'bulkPrint'])->name('member_cards.bulk_print')->middleware('role:admin,admin_support');
         Route::post('/customers/member-cards/bulk-print-a4', [\App\Http\Controllers\MemberCardController::class, 'bulkPrintA4'])->name('member_cards.bulk_print_a4')->middleware('role:admin,admin_support');

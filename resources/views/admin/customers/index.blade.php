@@ -4,7 +4,18 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 {{ __('Customers') }}
             </h2>
-            <a href="{{ route('admin.customers.create') }}" class="px-4 py-2 bg-green-500 text-white rounded">Add Customer</a>
+            <div class="flex items-center gap-2">
+                @if(in_array(Auth::user()->role?->role_name, ['admin', 'admin_support']))
+                <button type="button"
+                        x-data
+                        @click="$dispatch('open-import-modal')"
+                        class="inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded shadow transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                    Import Excel
+                </button>
+                @endif
+                <a href="{{ route('admin.customers.create') }}" class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded shadow transition">Add Customer</a>
+            </div>
         </div>
     </x-slot>
 
@@ -20,6 +31,18 @@
             @if(session('error'))
                 <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4" role="alert">
                     <p>{{ session('error') }}</p>
+                </div>
+            @endif
+
+            {{-- Import Result: Partial Success with Errors --}}
+            @if(session('import_success'))
+                <div class="bg-amber-50 border border-amber-300 text-amber-800 p-4 mb-4 rounded-lg" role="alert">
+                    <p class="font-semibold mb-2">⚠️ {{ session('import_success') }} Namun terdapat baris yang gagal:</p>
+                    <ul class="text-sm list-disc list-inside max-h-40 overflow-y-auto space-y-0.5">
+                        @foreach(session('import_errors', []) as $err)
+                            <li>{{ $err }}</li>
+                        @endforeach
+                    </ul>
                 </div>
             @endif
 
@@ -231,4 +254,101 @@
             });
         })();
     </script>
+
+    {{-- ===== Import Data Excel Modal ===== --}}
+    @if(in_array(Auth::user()->role?->role_name, ['admin', 'admin_support']))
+    @php $dealers = App\Models\Dealer::where('status', 'active')->get(); @endphp
+    <div x-data="{ open: false }"
+         @open-import-modal.window="open = true"
+         x-show="open"
+         x-cloak
+         class="fixed inset-0 z-50 flex items-center justify-center">
+
+        {{-- Backdrop --}}
+        <div class="absolute inset-0 bg-black/50" @click="open = false"></div>
+
+        {{-- Modal Box --}}
+        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 z-10"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 scale-95"
+             x-transition:enter-end="opacity-100 scale-100"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="opacity-100 scale-100"
+             x-transition:leave-end="opacity-0 scale-95">
+
+            {{-- Modal Header --}}
+            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 bg-indigo-100 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-bold text-slate-800">Import Data Excel</h3>
+                        <p class="text-xs text-slate-500">Pelanggan & Kendaraan (format: .xlsx, .xls, .csv)</p>
+                    </div>
+                </div>
+                <button type="button" @click="open = false" class="text-slate-400 hover:text-slate-600 transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+
+            {{-- Modal Body --}}
+            <form action="{{ route('admin.customers.import') }}" method="POST" enctype="multipart/form-data"
+                  x-data="{ loading: false }" @submit="loading = true">
+                @csrf
+                <div class="px-6 py-5 space-y-4">
+
+                    {{-- Dealer Selector --}}
+                    <div>
+                        <label for="import_dealer_id" class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Dealer Tujuan <span class="text-red-500">*</span></label>
+                        <select name="dealer_id" id="import_dealer_id" required
+                                class="w-full rounded-xl border-slate-200 bg-slate-50 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                            <option value="">-- Pilih Dealer --</option>
+                            @foreach($dealers as $dealer)
+                                <option value="{{ $dealer->dealer_id }}">{{ $dealer->dealer_name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    {{-- File Input --}}
+                    <div>
+                        <label for="import_file" class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">File Excel / CSV <span class="text-red-500">*</span></label>
+                        <input type="file" name="file" id="import_file" required
+                               accept=".xlsx,.xls,.csv"
+                               class="w-full text-sm text-slate-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 transition">
+                        <p class="text-[10px] text-slate-400 mt-1">Maks. ukuran file: 10 MB</p>
+                    </div>
+
+                    {{-- Download Template --}}
+                    <div class="flex items-center gap-2 bg-slate-50 rounded-xl px-4 py-3 border border-slate-200">
+                        <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                        <span class="text-xs text-slate-600 flex-1">Belum punya template? Unduh terlebih dahulu.</span>
+                        <a href="{{ route('admin.customers.import.template') }}"
+                           class="text-xs font-bold text-indigo-600 hover:text-indigo-800 hover:underline transition">Unduh Template</a>
+                    </div>
+
+                    {{-- Info note --}}
+                    <p class="text-[11px] text-slate-400 leading-relaxed">
+                        Pelanggan yang sudah terdaftar (berdasarkan no. HP) tidak akan digandakan. Kendaraan dengan plat nomor yang sama juga akan dilewati.
+                        Kartu member QR akan otomatis diterbitkan untuk pelanggan baru.
+                    </p>
+                </div>
+
+                {{-- Modal Footer --}}
+                <div class="px-6 py-4 border-t border-slate-100 flex justify-end gap-3">
+                    <button type="button" @click="open = false"
+                            class="px-4 py-2 text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition">
+                        Batal
+                    </button>
+                    <button type="submit" :disabled="loading"
+                            class="inline-flex items-center gap-2 px-5 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 rounded-xl shadow transition">
+                        <svg x-show="loading" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                        <span x-text="loading ? 'Memproses...' : 'Mulai Import'"></span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    @endif
+
 </x-app-layout>

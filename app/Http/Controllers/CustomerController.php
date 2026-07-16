@@ -123,4 +123,76 @@ class CustomerController extends Controller
 
         return $pdf->download('customers_export_' . now()->format('Ymd_His') . '.pdf');
     }
+    /**
+     * Stream-download a blank CSV import template.
+     */
+    public function downloadTemplate()
+    {
+        $headers = [
+            'nama_pelanggan',
+            'no_whatsapp',
+            'alamat',
+            'no_polisi',
+            'merek_kendaraan',
+            'tipe_kendaraan',
+            'tahun_kendaraan',
+        ];
+
+        $sampleRow = [
+            'Budi Santoso',
+            '081234567890',
+            'Jl. Sudirman No. 12, Jakarta',
+            'B 1234 ABC',
+            'Honda',
+            'Vario 150',
+            '2022',
+        ];
+
+        return response()->streamDownload(function () use ($headers, $sampleRow) {
+            $handle = fopen('php://output', 'w');
+            fputcsv($handle, $headers);
+            fputcsv($handle, $sampleRow);
+            fclose($handle);
+        }, 'template_import_pelanggan.csv', [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+        ]);
+    }
+
+    /**
+     * Handle Excel/CSV import of customers and vehicles.
+     */
+    public function importExcel(\Illuminate\Http\Request $request)
+    {
+        $request->validate([
+            'file'      => ['required', 'file', 'mimes:xlsx,xls,csv', 'max:10240'],
+            'dealer_id' => ['required', 'integer', 'exists:dealers,dealer_id'],
+        ], [
+            'file.required'      => 'Pilih file Excel / CSV untuk diimpor.',
+            'file.mimes'         => 'Format file harus .xlsx, .xls, atau .csv.',
+            'dealer_id.required' => 'Pilih dealer tujuan impor.',
+        ]);
+
+        $import = new \App\Imports\CustomerVehicleImport(
+            (int) $request->dealer_id,
+            auth()->id()
+        );
+
+        \Maatwebsite\Excel\Facades\Excel::import($import, $request->file('file'));
+
+        $failures = $import->failures();
+
+        if ($failures->isNotEmpty()) {
+            $errorMessages = $failures->map(function ($failure) {
+                return 'Baris ' . $failure->row() . ': ' . implode(', ', $failure->errors());
+            })->toArray();
+
+            return redirect()->route('admin.customers.index')
+                ->with('import_success', $import->getSuccessCount() . ' data berhasil diimpor.')
+                ->with('import_errors', $errorMessages);
+        }
+
+        return redirect()->route('admin.customers.index')
+            ->with('success', 'Import selesai! ' . $import->getSuccessCount() . ' data berhasil diimpor.');
+    }
 }
+
