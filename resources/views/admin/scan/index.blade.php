@@ -90,8 +90,8 @@
 
                         {{-- QR Reader --}}
                         <div id="reader"
-                             class="w-full max-w-lg bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl overflow-hidden"
-                             style="min-height: 300px;"></div>
+                             class="w-full max-w-lg rounded-xl border border-gray-200 shadow-inner"
+                             style="min-height: 300px; position: relative;"></div>
 
                         {{-- Stop + switch buttons --}}
                         <div class="flex gap-3 w-full max-w-lg">
@@ -262,7 +262,21 @@
 
             html5QrCode.start(
                 selectedId,
-                { fps: 10, qrbox: { width: 250, height: 250 } },
+                {
+                    fps: 10,
+                    qrbox: function(viewfinderWidth, viewfinderHeight) {
+                        // Dynamically size QR box to 70% of the smallest dimension
+                        const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+                        const size = Math.floor(minEdge * 0.7);
+                        return { width: size, height: size };
+                    },
+                    aspectRatio: 1.0,
+                    videoConstraints: {
+                        deviceId: { exact: selectedId },
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    }
+                },
                 (decodedText) => { validateToken(decodedText); },
                 () => { /* ignore frame errors */ }
             ).then(() => {
